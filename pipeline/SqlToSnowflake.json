@@ -5,7 +5,14 @@
 			{
 				"name": "SqlToSnowflake",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "CheckSqlChanges",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 3,
@@ -17,6 +24,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT * FROM CompanyLeads WHERE UpdatedDateUtc > '@{activity('CheckSqlChanges').output.firstRow.date1}'\n",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -142,6 +153,32 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "CheckSqlChanges",
+				"description": "Check if a new record was added by comparing it to the max UpdatedDateUtc",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select max(UpdatedDateUtc) as date1 from CompanyLeads",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzureSqlCompanyLeads",
+						"type": "DatasetReference"
+					}
+				}
 			}
 		],
 		"annotations": [],
