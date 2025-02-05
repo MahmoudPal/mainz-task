@@ -3,8 +3,8 @@
 ## Prerequisites
 Ensure you have Initialized SnowFlake and the SQL database:
 
-- [Snowflake Initialization Script](mainz-task/migrations/snowflake_init.sql).
-- [Azure SQL Initialization Script](mainz-task/migrations/sql_init.sql).
+- [Snowflake Initialization Script](migrations/snowflake_init.sql).
+- [Azure SQL Initialization Script](migrations/sql_init.sql).
 
 Ensure you created .env file and updated the keys
 ```sh
