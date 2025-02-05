@@ -1,0 +1,36 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "company-task"
+		},
+		"AzureSqlDatabase1_password": {
+			"value": ""
+		},
+		"Snowflake1_password": {
+			"value": ""
+		},
+		"AzureSqlDatabase1_properties_typeProperties_server": {
+			"value": "company-task.database.windows.net"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_database": {
+			"value": "SQLLeadDB"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_userName": {
+			"value": "mahmoud"
+		},
+		"storageLink_sasUri": {
+			"value": ""
+		},
+		"Snowflake1_properties_typeProperties_database": {
+			"value": "SnowLeadDB"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}

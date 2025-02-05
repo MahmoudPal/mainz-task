@@ -1,0 +1,460 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "company-task"
+		},
+		"AzureSqlDatabase1_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'AzureSqlDatabase1'"
+		},
+		"Snowflake1_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'Snowflake1'"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "company-task.database.windows.net"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "SQLLeadDB"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "mahmoud"
+		},
+		"storageLink_sasUri": {
+			"type": "secureString",
+			"metadata": "Secure string for 'sasUri' of 'storageLink'"
+		},
+		"Snowflake1_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "SnowLeadDB"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlDatabase1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('AzureSqlDatabase1_properties_typeProperties_server')]",
+					"database": "[parameters('AzureSqlDatabase1_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('AzureSqlDatabase1_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('AzureSqlDatabase1_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/storageLink')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"sasUri": "[parameters('storageLink_sasUri')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Snowflake1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SnowflakeV2",
+				"typeProperties": {
+					"authenticationType": "Basic",
+					"accountIdentifier": "mpkiind-qi04073",
+					"user": "istaiti01",
+					"database": "[parameters('Snowflake1_properties_typeProperties_database')]",
+					"warehouse": "company_task",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('Snowflake1_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlCompanyLeads')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "Id",
+						"type": "uniqueidentifier"
+					},
+					{
+						"name": "State",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "CreatedDateUtc",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "CancellationRequestDateUtc",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "CancellationDateUtc",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "CancellationRejectionDateUtc",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "SoldEmployee",
+						"type": "varchar"
+					},
+					{
+						"name": "CancelledEmployee",
+						"type": "varchar"
+					},
+					{
+						"name": "UpdatedDateUtc",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "CompanyLeads"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SnowflakeCompanyLeads')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Snowflake1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SnowflakeV2Table",
+				"schema": [
+					{
+						"name": "ID",
+						"type": "VARCHAR"
+					},
+					{
+						"name": "STATE",
+						"type": "NUMBER",
+						"precision": 38,
+						"scale": 0
+					},
+					{
+						"name": "CREATEDDATEUTC",
+						"type": "TIMESTAMP_NTZ"
+					},
+					{
+						"name": "CANCELLATIONREQUESTDATEUTC",
+						"type": "TIMESTAMP_NTZ"
+					},
+					{
+						"name": "CANCELLATIONDATEUTC",
+						"type": "TIMESTAMP_NTZ"
+					},
+					{
+						"name": "CANCELLATIONREJECTIONDATEUTC",
+						"type": "TIMESTAMP_NTZ"
+					},
+					{
+						"name": "SOLDEMPLOYEE",
+						"type": "VARCHAR"
+					},
+					{
+						"name": "CANCELLEDEMPLOYEE",
+						"type": "VARCHAR"
+					},
+					{
+						"name": "UPDATEDDATEUTC",
+						"type": "TIMESTAMP_NTZ"
+					}
+				],
+				"typeProperties": {
+					"schema": "LEADSCHEMA",
+					"table": "COMPANYLEADS"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Snowflake1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlToSnowflake')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "SqlToSnowflake",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "CheckSqlChanges",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 3,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "SELECT * FROM CompanyLeads WHERE UpdatedDateUtc > '@{activity('CheckSqlChanges').output.firstRow.date1}'\n",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "SnowflakeV2Sink",
+								"importSettings": {
+									"type": "SnowflakeImportCopyCommand"
+								}
+							},
+							"enableStaging": true,
+							"stagingSettings": {
+								"linkedServiceName": {
+									"referenceName": "storageLink",
+									"type": "LinkedServiceReference"
+								},
+								"path": "staging"
+							},
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "Id",
+											"type": "Guid"
+										},
+										"sink": {
+											"name": "ID",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "State",
+											"type": "Int32"
+										},
+										"sink": {
+											"name": "STATE",
+											"type": "Int64"
+										}
+									},
+									{
+										"source": {
+											"name": "CreatedDateUtc",
+											"type": "DateTime"
+										},
+										"sink": {
+											"name": "CREATEDDATEUTC",
+											"type": "DateTime"
+										}
+									},
+									{
+										"source": {
+											"name": "CancellationRequestDateUtc",
+											"type": "DateTime"
+										},
+										"sink": {
+											"name": "CANCELLATIONREQUESTDATEUTC",
+											"type": "DateTime"
+										}
+									},
+									{
+										"source": {
+											"name": "CancellationDateUtc",
+											"type": "DateTime"
+										},
+										"sink": {
+											"name": "CANCELLATIONDATEUTC",
+											"type": "DateTime"
+										}
+									},
+									{
+										"source": {
+											"name": "CancellationRejectionDateUtc",
+											"type": "DateTime"
+										},
+										"sink": {
+											"name": "CANCELLATIONREJECTIONDATEUTC",
+											"type": "DateTime"
+										}
+									},
+									{
+										"source": {
+											"name": "SoldEmployee",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SOLDEMPLOYEE",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "CancelledEmployee",
+											"type": "String"
+										},
+										"sink": {
+											"name": "CANCELLEDEMPLOYEE",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "UpdatedDateUtc",
+											"type": "DateTime"
+										},
+										"sink": {
+											"name": "UPDATEDDATEUTC",
+											"type": "DateTime"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "AzureSqlCompanyLeads",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "SnowflakeCompanyLeads",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "CheckSqlChanges",
+						"description": "Check if a new record was added by comparing it to the max UpdatedDateUtc",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select max(UpdatedDateUtc) as date1 from CompanyLeads",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "AzureSqlCompanyLeads",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-02-02T20:06:23Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/AzureSqlCompanyLeads')]",
+				"[concat(variables('factoryId'), '/datasets/SnowflakeCompanyLeads')]",
+				"[concat(variables('factoryId'), '/linkedServices/storageLink')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/30-MIN')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "SqlToSnowflake",
+						"type": "PipelineReference"
+					},
+					"parameters": {}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Minute",
+					"interval": 30,
+					"startTime": "2025-02-02T17:59:00Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 50,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/SqlToSnowflake')]"
+			]
+		}
+	]
+}
