@@ -2,7 +2,7 @@
 	"name": "SnowflakeCompanyLeads",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "SnowflakeOutput",
+			"referenceName": "Snowflake1",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
