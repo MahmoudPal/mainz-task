@@ -20,11 +20,11 @@
 		"AzureSqlDatabase1_properties_typeProperties_userName": {
 			"value": "mahmoud"
 		},
-		"storageLink_sasUri": {
-			"value": ""
-		},
 		"Snowflake1_properties_typeProperties_database": {
 			"value": "SnowLeadDB"
+		},
+		"storageLink_sasUri": {
+			"value": ""
 		}
 	}
 }

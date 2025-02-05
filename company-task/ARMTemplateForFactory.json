@@ -27,13 +27,13 @@
 			"type": "string",
 			"defaultValue": "mahmoud"
 		},
-		"storageLink_sasUri": {
-			"type": "secureString",
-			"metadata": "Secure string for 'sasUri' of 'storageLink'"
-		},
 		"Snowflake1_properties_typeProperties_database": {
 			"type": "string",
 			"defaultValue": "SnowLeadDB"
+		},
+		"storageLink_sasUri": {
+			"type": "secureString",
+			"metadata": "Secure string for 'sasUri' of 'storageLink'"
 		}
 	},
 	"variables": {
@@ -216,7 +216,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
-								"sqlReaderQuery": "select max(UpdatedDateUtc) as date1 from CompanyLeads",
+								"sqlReaderQuery": "select LastCopiedTimestamp as date1 from DataSyncMetadata where TableName = 'CompanyLeads'",
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
@@ -225,6 +225,33 @@
 								"type": "DatasetReference",
 								"parameters": {}
 							}
+						}
+					},
+					{
+						"name": "UpdateChangesTable",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "SqlToSnowflake",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[UpdateLastCopiedTimestamp]"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureSqlDatabase1",
+							"type": "LinkedServiceReference"
 						}
 					}
 				],
@@ -237,6 +264,7 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/AzureSqlCompanyLeads')]",
 				"[concat(variables('factoryId'), '/datasets/SnowflakeCompanyLeads')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]",
 				"[concat(variables('factoryId'), '/linkedServices/storageLink')]"
 			]
 		},
@@ -392,6 +420,27 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Snowflake1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SnowflakeV2",
+				"typeProperties": {
+					"authenticationType": "Basic",
+					"accountIdentifier": "mpkiind-qi04073",
+					"user": "istaiti01",
+					"database": "[parameters('Snowflake1_properties_typeProperties_database')]",
+					"warehouse": "company_task",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('Snowflake1_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/storageLink')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -434,27 +483,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/SqlToSnowflake')]"
 			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Snowflake1')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "SnowflakeV2",
-				"typeProperties": {
-					"authenticationType": "Basic",
-					"accountIdentifier": "mpkiind-qi04073",
-					"user": "istaiti01",
-					"database": "[parameters('Snowflake1_properties_typeProperties_database')]",
-					"warehouse": "company_task",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('Snowflake1_password')]"
-					}
-				}
-			},
-			"dependsOn": []
 		}
 	]
 }

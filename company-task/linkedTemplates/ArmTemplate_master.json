@@ -27,13 +27,13 @@
 			"type": "string",
 			"defaultValue": "mahmoud"
 		},
-		"storageLink_sasUri": {
-			"type": "secureString",
-			"metadata": "Secure string for 'sasUri' of 'storageLink'"
-		},
 		"Snowflake1_properties_typeProperties_database": {
 			"type": "string",
 			"defaultValue": "SnowLeadDB"
+		},
+		"storageLink_sasUri": {
+			"type": "secureString",
+			"metadata": "Secure string for 'sasUri' of 'storageLink'"
 		},
 		"containerUri": {
 			"type": "string",
@@ -77,11 +77,11 @@
 					"AzureSqlDatabase1_properties_typeProperties_userName": {
 						"value": "[parameters('AzureSqlDatabase1_properties_typeProperties_userName')]"
 					},
-					"storageLink_sasUri": {
-						"value": "[parameters('storageLink_sasUri')]"
-					},
 					"Snowflake1_properties_typeProperties_database": {
 						"value": "[parameters('Snowflake1_properties_typeProperties_database')]"
+					},
+					"storageLink_sasUri": {
+						"value": "[parameters('storageLink_sasUri')]"
 					}
 				}
 			},
