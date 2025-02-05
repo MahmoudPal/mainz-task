@@ -1,0 +1,215 @@
+{
+	"name": "SqlToSnowflake",
+	"properties": {
+		"activities": [
+			{
+				"name": "SqlToSnowflake",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "CheckSqlChange",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT * FROM CompanyLeads WHERE UpdatedDateUtc > '@{activity('CheckSqlChanges').output.firstRow.date1}'\n",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SnowflakeV2Sink",
+						"importSettings": {
+							"type": "SnowflakeImportCopyCommand"
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "storageLink",
+							"type": "LinkedServiceReference"
+						},
+						"path": "staging"
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "Id",
+									"type": "Guid"
+								},
+								"sink": {
+									"name": "ID",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "State",
+									"type": "Int32"
+								},
+								"sink": {
+									"name": "STATE",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "CreatedDateUtc",
+									"type": "DateTime"
+								},
+								"sink": {
+									"name": "CREATEDDATEUTC",
+									"type": "DateTime"
+								}
+							},
+							{
+								"source": {
+									"name": "CancellationRequestDateUtc",
+									"type": "DateTime"
+								},
+								"sink": {
+									"name": "CANCELLATIONREQUESTDATEUTC",
+									"type": "DateTime"
+								}
+							},
+							{
+								"source": {
+									"name": "CancellationDateUtc",
+									"type": "DateTime"
+								},
+								"sink": {
+									"name": "CANCELLATIONDATEUTC",
+									"type": "DateTime"
+								}
+							},
+							{
+								"source": {
+									"name": "CancellationRejectionDateUtc",
+									"type": "DateTime"
+								},
+								"sink": {
+									"name": "CANCELLATIONREJECTIONDATEUTC",
+									"type": "DateTime"
+								}
+							},
+							{
+								"source": {
+									"name": "SoldEmployee",
+									"type": "String"
+								},
+								"sink": {
+									"name": "SOLDEMPLOYEE",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "CancelledEmployee",
+									"type": "String"
+								},
+								"sink": {
+									"name": "CANCELLEDEMPLOYEE",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "UpdatedDateUtc",
+									"type": "DateTime"
+								},
+								"sink": {
+									"name": "UPDATEDDATEUTC",
+									"type": "DateTime"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "AzureSqlCompanyLeads",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "SnowflakeCompanyLeads",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "CheckSqlChange",
+				"description": "Check if a new record was added by comparing it to the max UpdatedDateUtc",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select LastCopiedTimestamp as date1 from DataSyncMetadata where TableName = 'CompanyLeads'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzureSqlCompanyLeads",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "UpdateChangesTable",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "SqlToSnowflake",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[UpdateLastCopiedTimestamp]"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2025-02-02T20:06:23Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

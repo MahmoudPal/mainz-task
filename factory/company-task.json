@@ -1,0 +1,9 @@
+{
+	"name": "company-task",
+	"location": "westeurope",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "1eaff1f7-b5d9-4171-bae6-900cf988930a",
+		"tenantId": "9ccb3bff-91f0-4184-a6a2-f0a8e2994499"
+	}
+}
