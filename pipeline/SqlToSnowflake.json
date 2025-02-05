@@ -7,7 +7,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "CheckSqlChanges",
+						"activity": "CheckSqlChange",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -155,7 +155,7 @@
 				]
 			},
 			{
-				"name": "CheckSqlChanges",
+				"name": "CheckSqlChange",
 				"description": "Check if a new record was added by comparing it to the max UpdatedDateUtc",
 				"type": "Lookup",
 				"dependsOn": [],
