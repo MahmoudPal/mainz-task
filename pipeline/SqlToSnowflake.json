@@ -170,7 +170,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select max(UpdatedDateUtc) as date1 from CompanyLeads",
+						"sqlReaderQuery": "select LastCopiedTimestamp as date1 from DataSyncMetadata where TableName = 'CompanyLeads'",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
